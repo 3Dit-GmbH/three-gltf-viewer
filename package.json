@@ -7,7 +7,7 @@
   "browser": "src/app.js",
   "scripts": {
     "start": "electron .",
-    "build": "parcel build index.html",
+    "build": "parcel build index.html -o baseinteraction/com.3Dit.BaseInteraction.ThreeJS/Data/bundle.js",
     "build:registry": "curl https://rawgit.com/KhronosGroup/glTF-Generator-Registry/master/registry.json -o lib/gltf-generator-registry.json",
     "package": "npm run package:windows && npm run package:mac && npm run package:linux",
     "package:windows": "electron-packager . gltf-viewer --overwrite --asar --platform=win32 --arch=ia32 --icon=assets/icons/glTF-Viewer.ico --out=package --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"glTF Viewer\"",
@@ -15,9 +15,12 @@
     "package:linux": "electron-packager . gltf-viewer --overwrite --asar --platform=linux --arch=x64 --icon=assets/icons/glTF-Viewer.png --out=package",
     "dev": "parcel index.html --port 3000",
     "dev:electron": "concurrently \"parcel watch index.html\" \"npm start\"",
-    "test": "node scripts/gen_test.js",
-    "deploy": "npm run build && now dist --local-config now.json --prod",
-    "postversion": "git push && git push --tags"
+    "test_three": "node scripts/gen_test.js",
+    "deploy_three": "npm run build && now dist --local-config now.json --prod",
+    "postversion": "git push && git push --tags",
+    "test": "mocha --watch",
+    "deploy": "cd .\\dist\\ && interaction-deploy",
+    "deploy:production": "cd .\\baseinteraction\\com.3Dit.BaseInteraction.ThreeJS\\ && interaction-deploy -p"
   },
   "keywords": [
     "gltf",
@@ -31,6 +34,7 @@
   "author": "Don McCurdy <dm@donmccurdy.com> (https://www.donmccurdy.com)",
   "license": "MIT",
   "dependencies": {
+    "@tweenjs/tween.js": "^18.5.0",
     "dat.gui": "^0.7.7",
     "electron-serve": "^1.0.0",
     "glob-to-regexp": "^0.4.1",
@@ -40,8 +44,10 @@
     "handlebars": "^4.7.6",
     "open": "7.0.3",
     "query-string": "^6.12.1",
+    "rgba-convert": "^0.3.0",
     "simple-dropzone": "^0.7.0",
-    "three": "^0.115.0"
+    "three": "^0.115.0",
+    "underscore": "^1.10.2"
   },
   "devDependencies": {
     "chalk": "^4.0.0",

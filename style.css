@@ -242,7 +242,7 @@ header h1 + .separator {
  * Validation toggle
  */
 
-.report-toggle-wrap.hidden { display: none; }
+.report-toggle-wrap { display: none; }
 
 .report-toggle {
   cursor: pointer;
@@ -264,6 +264,7 @@ header h1 + .separator {
 .report-toggle.level-0 { color: #444; background: #f4c2be; border-left-color: #b10026; }
 
 .report-toggle-text {
+  display: none;
   line-height: 32px;
   padding: 0 0.5em;
   font-weight: 300;

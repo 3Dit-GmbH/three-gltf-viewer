@@ -20,6 +20,13 @@ import {
   Vector3,
   WebGLRenderer,
   sRGBEncoding,
+  NoToneMapping,
+  LinearToneMapping,
+  ReinhardToneMapping,
+  Uncharted2ToneMapping,
+  CineonToneMapping,
+  ACESFilmicToneMapping
+
 } from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -50,13 +57,22 @@ const MAP_NAMES = [
   'specularMap',
 ];
 
-const Preset = {ASSET_GENERATOR: 'assetgenerator'};
+const toneMappingOptions = {
+  None: NoToneMapping,
+  Linear: LinearToneMapping,
+  Reinhard: ReinhardToneMapping,
+  Uncharted2: Uncharted2ToneMapping,
+  Cineon: CineonToneMapping,
+  ACESFilmic: ACESFilmicToneMapping
+}
+
+const Preset = { ASSET_GENERATOR: 'assetgenerator' };
 
 Cache.enabled = true;
 
 export class Viewer {
 
-  constructor (el, options) {
+  constructor(el, options) {
     this.el = el;
     this.options = options;
 
@@ -73,6 +89,8 @@ export class Viewer {
       background: false,
       playbackSpeed: 1.0,
       actionStates: {},
+      toneMapping: toneMappingOptions.Uncharted2,
+      actions: {},
       camera: DEFAULT_CAMERA,
       wireframe: false,
       skeleton: false,
@@ -82,12 +100,12 @@ export class Viewer {
       addLights: true,
       exposure: 1.0,
       textureEncoding: 'sRGB',
-      ambientIntensity: 0.3,
-      ambientColor: 0xFFFFFF,
-      directIntensity: 0.8 * Math.PI, // TODO(#116)
-      directColor: 0xFFFFFF,
-      bgColor1: '#ffffff',
-      bgColor2: '#353535'
+      ambientIntensity: 2,
+      ambientColor: 0x000000,
+      directIntensity: 2, //0.8 * Math.PI, // TODO(#116)
+      directColor: 0xFFF5D9,
+      bgColor1: '#F1F1F1',
+      bgColor2: '#353535',
     };
 
     this.prevTime = 0;
@@ -101,21 +119,27 @@ export class Viewer {
     const fov = options.preset === Preset.ASSET_GENERATOR
       ? 0.8 * 180 / Math.PI
       : 60;
-    this.defaultCamera = new PerspectiveCamera( fov, el.clientWidth / el.clientHeight, 0.01, 1000 );
+    this.defaultCamera = new PerspectiveCamera(fov, el.clientWidth / el.clientHeight, 0.01, 1000);
+    
+    // govie addon: changed scale object instead of move camera
+    // this.defaultCamera.near = 0.01;
+    // this.defaultCamera.far = 100;
+    // this.defaultCamera.updateProjectionMatrix(); 
+    
     this.activeCamera = this.defaultCamera;
-    this.scene.add( this.defaultCamera );
+    this.scene.add(this.defaultCamera);
 
-    this.renderer = window.renderer = new WebGLRenderer({antialias: true});
+    this.renderer = window.renderer = new WebGLRenderer({ antialias: true });
     this.renderer.physicallyCorrectLights = true;
     this.renderer.outputEncoding = sRGBEncoding;
-    this.renderer.setClearColor( 0xcccccc );
-    this.renderer.setPixelRatio( window.devicePixelRatio );
-    this.renderer.setSize( el.clientWidth, el.clientHeight );
+    this.renderer.setClearColor(0xcccccc);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(el.clientWidth, el.clientHeight);
 
-    this.pmremGenerator = new PMREMGenerator( this.renderer );
+    this.pmremGenerator = new PMREMGenerator(this.renderer);
     this.pmremGenerator.compileEquirectangularShader();
 
-    this.controls = new OrbitControls( this.defaultCamera, this.renderer.domElement );
+    this.controls = new OrbitControls(this.defaultCamera, this.renderer.domElement);
     this.controls.autoRotate = false;
     this.controls.autoRotateSpeed = -10;
     this.controls.screenSpacePanning = true;
@@ -145,13 +169,13 @@ export class Viewer {
     if (options.kiosk) this.gui.close();
 
     this.animate = this.animate.bind(this);
-    requestAnimationFrame( this.animate );
+    requestAnimationFrame(this.animate);
     window.addEventListener('resize', this.resize.bind(this), false);
   }
 
-  animate (time) {
+  animate(time) {
 
-    requestAnimationFrame( this.animate );
+    requestAnimationFrame(this.animate);
 
     const dt = (time - this.prevTime) / 1000;
 
@@ -164,23 +188,23 @@ export class Viewer {
 
   }
 
-  render () {
+  render() {
 
-    this.renderer.render( this.scene, this.activeCamera );
+    this.renderer.render(this.scene, this.activeCamera);
     if (this.state.grid) {
       this.axesCamera.position.copy(this.defaultCamera.position)
       this.axesCamera.lookAt(this.axesScene.position)
-      this.axesRenderer.render( this.axesScene, this.axesCamera );
+      this.axesRenderer.render(this.axesScene, this.axesCamera);
     }
   }
 
-  resize () {
+  resize() {
 
-    const {clientHeight, clientWidth} = this.el.parentElement;
+    const { clientHeight, clientWidth } = this.el.parentElement;
 
     this.defaultCamera.aspect = clientWidth / clientHeight;
     this.defaultCamera.updateProjectionMatrix();
-    this.vignette.style({aspect: this.defaultCamera.aspect});
+    this.vignette.style({ aspect: this.defaultCamera.aspect });
     this.renderer.setSize(clientWidth, clientHeight);
 
     this.axesCamera.aspect = this.axesDiv.clientWidth / this.axesDiv.clientHeight;
@@ -188,7 +212,7 @@ export class Viewer {
     this.axesRenderer.setSize(this.axesDiv.clientWidth, this.axesDiv.clientHeight);
   }
 
-  load ( url, rootPath, assetMap ) {
+  load(url, rootPath, assetMap) {
 
     const baseURL = LoaderUtils.extractUrlBase(url);
 
@@ -222,8 +246,8 @@ export class Viewer {
       loader.setCrossOrigin('anonymous');
 
       const dracoLoader = new DRACOLoader();
-      dracoLoader.setDecoderPath( 'assets/draco/' );
-      loader.setDRACOLoader( dracoLoader );
+      dracoLoader.setDecoderPath('assets/draco/');
+      loader.setDRACOLoader(dracoLoader);
 
       const blobURLs = [];
 
@@ -241,6 +265,19 @@ export class Viewer {
         }
 
         this.setContent(scene, clips);
+        // govie addon : handle and get custom props
+        const customProps = this.handleCustomProperty(scene);
+        this.playAllClips();
+
+
+        // govie addon: loading callback
+        if (this.onLoaded && this.onLoaded.length) {
+          this.onLoaded.forEach((cb) => {
+            cb({
+              loadedUrl: url, scene, clips, customProps,
+            });
+          });
+        }
 
         blobURLs.forEach(URL.revokeObjectURL);
 
@@ -254,12 +291,28 @@ export class Viewer {
     });
 
   }
+  // govie addon: init camera
+  initCamera() {
+    this.defaultCamera.near = 0.001;
+    this.defaultCamera.far = 100;
+    this.defaultCamera.updateProjectionMatrix();
+
+    const center = new Vector3(0, 0, 0);
+
+    this.defaultCamera.position.copy(center);
+    this.defaultCamera.position.x += 2.0;
+    this.defaultCamera.position.y += 5.0;
+    this.defaultCamera.position.z += 14.0;
+    this.defaultCamera.lookAt(center);
+
+    this.setCamera(DEFAULT_CAMERA);
+  }
 
   /**
    * @param {THREE.Object3D} object
    * @param {Array<THREE.AnimationClip} clips
    */
-  setContent ( object, clips ) {
+  setContent(object, clips) {
 
     this.clear();
 
@@ -279,8 +332,8 @@ export class Viewer {
 
     if (this.options.cameraPosition) {
 
-      this.defaultCamera.position.fromArray( this.options.cameraPosition );
-      this.defaultCamera.lookAt( new Vector3() );
+      this.defaultCamera.position.fromArray(this.options.cameraPosition);
+      this.defaultCamera.lookAt(new Vector3());
 
     } else {
 
@@ -326,12 +379,13 @@ export class Viewer {
     this.updateDisplay();
 
     window.content = this.content;
-    console.info('[glTF Viewer] THREE.Scene exported as `window.content`.');
-    this.printGraph(this.content);
+    // govie addon: removed scene graph print
+    // console.info('[glTF Viewer] THREE.Scene exported as `window.content`.');
+    // this.printGraph(this.content);
 
   }
 
-  printGraph (node) {
+  printGraph(node) {
 
     console.group(' <' + node.type + '> ' + node.name);
     node.children.forEach((child) => this.printGraph(child));
@@ -342,7 +396,7 @@ export class Viewer {
   /**
    * @param {Array<THREE.AnimationClip} clips
    */
-  setClips ( clips ) {
+  setClips(clips) {
     if (this.mixer) {
       this.mixer.stopAllAction();
       this.mixer.uncacheRoot(this.mixer.getRoot());
@@ -352,10 +406,10 @@ export class Viewer {
     this.clips = clips;
     if (!clips.length) return;
 
-    this.mixer = new AnimationMixer( this.content );
+    this.mixer = new AnimationMixer(this.content);
   }
 
-  playAllClips () {
+  playAllClips() {
     this.clips.forEach((clip) => {
       this.mixer.clipAction(clip).reset().play();
       this.state.actionStates[clip.name] = true;
@@ -365,7 +419,7 @@ export class Viewer {
   /**
    * @param {string} name
    */
-  setCamera ( name ) {
+  setCamera(name) {
     if (name === DEFAULT_CAMERA) {
       this.controls.enabled = true;
       this.activeCamera = this.defaultCamera;
@@ -379,7 +433,7 @@ export class Viewer {
     }
   }
 
-  updateTextureEncoding () {
+  updateTextureEncoding() {
     const encoding = this.state.textureEncoding === 'sRGB'
       ? sRGBEncoding
       : LinearEncoding;
@@ -390,7 +444,7 @@ export class Viewer {
     });
   }
 
-  updateLights () {
+  updateLights() {
     const state = this.state;
     const lights = this.lights;
 
@@ -410,7 +464,7 @@ export class Viewer {
     }
   }
 
-  addLights () {
+  addLights() {
     const state = this.state;
 
     if (this.options.preset === Preset.ASSET_GENERATOR) {
@@ -421,36 +475,49 @@ export class Viewer {
       return;
     }
 
-    const light1  = new AmbientLight(state.ambientColor, state.ambientIntensity);
+    const light1 = new AmbientLight(state.ambientColor, state.ambientIntensity);
     light1.name = 'ambient_light';
-    this.defaultCamera.add( light1 );
+    this.defaultCamera.add(light1);
 
-    const light2  = new DirectionalLight(state.directColor, state.directIntensity);
+    const light2 = new DirectionalLight(state.directColor, state.directIntensity);
     light2.position.set(0.5, 0, 0.866); // ~60º
     light2.name = 'main_light';
-    this.defaultCamera.add( light2 );
+    this.defaultCamera.add(light2);
 
     this.lights.push(light1, light2);
   }
 
-  removeLights () {
+  removeLights() {
 
     this.lights.forEach((light) => light.parent.remove(light));
     this.lights.length = 0;
 
   }
 
-  updateEnvironment () {
+  updateEnvironment() {
 
     const environment = environments.filter((entry) => entry.name === this.state.environment)[0];
 
-    this.getCubeMapTexture( environment ).then(( { envMap } ) => {
+    this.getCubeMapTexture(environment).then(({ envMap }) => {
 
       if ((!envMap || !this.state.background) && this.activeCamera === this.defaultCamera) {
         this.scene.add(this.vignette);
       } else {
         this.scene.remove(this.vignette);
       }
+
+
+      /* govie addon: remember loaded environments */
+      environment.isLoaded = true;
+      environment.envMap = envMap;
+      // environment.cubeMap = cubeMap;
+
+      traverseMaterials(this.content, (material) => {
+        if (material.isMeshStandardMaterial || material.isGLTFSpecularGlossinessMaterial) {
+          material.envMap = envMap;
+          material.needsUpdate = true;
+        }
+      });
 
       this.scene.environment = envMap;
       this.scene.background = this.state.background ? envMap : null;
@@ -459,30 +526,36 @@ export class Viewer {
 
   }
 
-  getCubeMapTexture ( environment ) {
-    const { path } = environment;
+  getCubeMapTexture(environment) {
+    const {
+      path, format, isLoaded, envMap,
+    } = environment;
 
+    /* govie addon: remember loaded environments */
+    if (isLoaded) {
+      return Promise.resolve({ envMap });
+    }
     // no envmap
-    if ( ! path ) return Promise.resolve( { envMap: null } );
+    if (!path) return Promise.resolve({ envMap: null });
 
-    return new Promise( ( resolve, reject ) => {
+    return new Promise((resolve, reject) => {
 
       new RGBELoader()
-        .setDataType( UnsignedByteType )
-        .load( path, ( texture ) => {
+        .setDataType(UnsignedByteType)
+        .load(path, (texture) => {
 
-          const envMap = this.pmremGenerator.fromEquirectangular( texture ).texture;
+          const envMap = this.pmremGenerator.fromEquirectangular(texture).texture;
           this.pmremGenerator.dispose();
 
-          resolve( { envMap } );
+          resolve({ envMap });
 
-        }, undefined, reject );
+        }, undefined, reject);
 
     });
 
   }
 
-  updateDisplay () {
+  updateDisplay() {
     if (this.skeletonHelpers.length) {
       this.skeletonHelpers.forEach((helper) => this.scene.remove(helper));
     }
@@ -518,8 +591,8 @@ export class Viewer {
     }
   }
 
-  updateBackground () {
-    this.vignette.style({colors: [this.state.bgColor1, this.state.bgColor2]});
+  updateBackground() {
+    this.vignette.style({ colors: [this.state.bgColor1, this.state.bgColor2] });
   }
 
   /**
@@ -527,31 +600,31 @@ export class Viewer {
    *
    * See: https://stackoverflow.com/q/16226693/1314762
    */
-  addAxesHelper () {
+  addAxesHelper() {
     this.axesDiv = document.createElement('div');
-    this.el.appendChild( this.axesDiv );
+    this.el.appendChild(this.axesDiv);
     this.axesDiv.classList.add('axes');
 
-    const {clientWidth, clientHeight} = this.axesDiv;
+    const { clientWidth, clientHeight } = this.axesDiv;
 
     this.axesScene = new Scene();
-    this.axesCamera = new PerspectiveCamera( 50, clientWidth / clientHeight, 0.1, 10 );
-    this.axesScene.add( this.axesCamera );
+    this.axesCamera = new PerspectiveCamera(50, clientWidth / clientHeight, 0.1, 10);
+    this.axesScene.add(this.axesCamera);
 
-    this.axesRenderer = new WebGLRenderer( { alpha: true } );
-    this.axesRenderer.setPixelRatio( window.devicePixelRatio );
-    this.axesRenderer.setSize( this.axesDiv.clientWidth, this.axesDiv.clientHeight );
+    this.axesRenderer = new WebGLRenderer({ alpha: true });
+    this.axesRenderer.setPixelRatio(window.devicePixelRatio);
+    this.axesRenderer.setSize(this.axesDiv.clientWidth, this.axesDiv.clientHeight);
 
     this.axesCamera.up = this.defaultCamera.up;
 
     this.axesCorner = new AxesHelper(5);
-    this.axesScene.add( this.axesCorner );
+    this.axesScene.add(this.axesCorner);
     this.axesDiv.appendChild(this.axesRenderer.domElement);
   }
 
-  addGUI () {
+  addGUI() {
 
-    const gui = this.gui = new GUI({autoPlace: false, width: 260, hideable: true});
+    const gui = this.gui = new GUI({ autoPlace: false, width: 260, hideable: true });
 
     // Display controls.
     const dispFolder = gui.addFolder('Display');
@@ -574,7 +647,7 @@ export class Viewer {
     const lightFolder = gui.addFolder('Lighting');
     const encodingCtrl = lightFolder.add(this.state, 'textureEncoding', ['sRGB', 'Linear']);
     encodingCtrl.onChange(() => this.updateTextureEncoding());
-    lightFolder.add(this.renderer, 'outputEncoding', {sRGB: sRGBEncoding, Linear: LinearEncoding})
+    lightFolder.add(this.renderer, 'outputEncoding', { sRGB: sRGBEncoding, Linear: LinearEncoding })
       .onChange(() => {
         this.renderer.outputEncoding = Number(this.renderer.outputEncoding);
         traverseMaterials(this.content, (material) => {
@@ -599,7 +672,7 @@ export class Viewer {
     playbackSpeedCtrl.onChange((speed) => {
       if (this.mixer) this.mixer.timeScale = speed;
     });
-    this.animFolder.add({playAll: () => this.playAllClips()}, 'playAll');
+    this.animFolder.add({ playAll: () => this.playAllClips() }, 'playAll');
 
     // Morph target controls.
     this.morphFolder = gui.addFolder('Morph Targets');
@@ -615,17 +688,17 @@ export class Viewer {
     this.stats.dom.style.position = 'static';
     perfLi.appendChild(this.stats.dom);
     perfLi.classList.add('gui-stats');
-    perfFolder.__ul.appendChild( perfLi );
+    perfFolder.__ul.appendChild(perfLi);
 
     const guiWrap = document.createElement('div');
-    this.el.appendChild( guiWrap );
+    this.el.appendChild(guiWrap);
     guiWrap.classList.add('gui-wrap');
     guiWrap.appendChild(gui.domElement);
     gui.open();
 
   }
 
-  updateGUI () {
+  updateGUI() {
     this.cameraFolder.domElement.style.display = 'none';
 
     this.morphCtrls.forEach((ctrl) => ctrl.remove());
@@ -660,7 +733,7 @@ export class Viewer {
       this.morphFolder.domElement.style.display = '';
       morphMeshes.forEach((mesh) => {
         if (mesh.morphTargetInfluences.length) {
-          const nameCtrl = this.morphFolder.add({name: mesh.name || 'Untitled'}, 'name');
+          const nameCtrl = this.morphFolder.add({ name: mesh.name || 'Untitled' }, 'name');
           this.morphCtrls.push(nameCtrl);
         }
         for (let i = 0; i < mesh.morphTargetInfluences.length; i++) {
@@ -699,37 +772,37 @@ export class Viewer {
     }
   }
 
-  clear () {
+  clear() {
 
-    if ( !this.content ) return;
+    if (!this.content) return;
 
-    this.scene.remove( this.content );
+    this.scene.remove(this.content);
 
     // dispose geometry
     this.content.traverse((node) => {
 
-      if ( !node.isMesh ) return;
+      if (!node.isMesh) return;
 
       node.geometry.dispose();
 
-    } );
+    });
 
     // dispose textures
-    traverseMaterials( this.content, (material) => {
+    traverseMaterials(this.content, (material) => {
 
-      MAP_NAMES.forEach( (map) => {
+      MAP_NAMES.forEach((map) => {
 
-        if (material[ map ]) material[ map ].dispose();
+        if (material[map]) material[map].dispose();
 
-      } );
+      });
 
-    } );
+    });
 
   }
 
 };
 
-function traverseMaterials (object, callback) {
+function traverseMaterials(object, callback) {
   object.traverse((node) => {
     if (!node.isMesh) return;
     const materials = Array.isArray(node.material)
