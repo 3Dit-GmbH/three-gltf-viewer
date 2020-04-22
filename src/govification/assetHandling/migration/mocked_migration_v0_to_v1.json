@@ -1,0 +1,73 @@
+{
+    "v0":
+    [
+        {
+            "id":"active-animation:anim1",
+            "type":"boolean",
+            "title":"some.animation1",
+            "subTitle":"Toggle on/off",
+            "defaultValue":true
+        },
+        {
+            "id":"active-animation:anim2",
+            "type":"boolean",
+            "title":"some.animation2",
+            "subTitle":"Toggle on/off",
+            "defaultValue":false
+        },
+        {
+            "id":"active-animation:anim3",
+            "type":"boolean",
+            "title":"some.animation3",
+            "subTitle":"Toggle on/off",
+            "defaultValue":true
+        }
+    ],
+    "v1":
+    [
+        {
+            "id":"animation-state:anim1",
+            "type":"enum",
+            "title":"some.animation1",
+            "subTitle":"",
+            "data":{
+                "0":"Stoppen",
+                "1":"Pausieren",
+                "2":"Endlos Abspielen"
+            },
+            "defaultValue":"2"
+        },
+        {
+            "id":"animation-state:anim2",
+            "type":"enum",            
+            "title":"some.animation2",
+            "subTitle":"",
+            "data":{
+                "0":"Stoppen",
+                "1":"Pausieren",
+                "2":"Endlos Abspielen"
+            },
+            "defaultValue":"0"
+        },
+        {
+            "id":"animation-state:anim3",
+            "type":"enum",
+            "title":"some.animation3",
+            "subTitle":"",
+            "data":{
+                "0":"Stoppen",
+                "1":"Pausieren",
+                "2":"Endlos Abspielen"
+            },
+            "defaultValue":"2"
+        },
+        {
+            "id":"version-attribute",
+            "type":"float",
+            "title":"",
+            "subTitle":"",
+            "defaultValue":1,
+            "hidden":true
+        }
+    ]
+}
