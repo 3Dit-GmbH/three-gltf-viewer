@@ -24,6 +24,7 @@ body {
 }
 
 .dropzone {
+  display:none;
   display: flex;
   flex-grow: 1;
   flex-direction: column;
@@ -52,19 +53,8 @@ body {
   flex-shrink: 1;
   position: absolute;
   top: 0;
-  z-index: 0;
-}
-
-.axes {
-    width: 100px;
-    height: 100px;
-    margin: 20px;
-    padding: 0px;
-    position: absolute;
-    left: 0px;
-    bottom: 0px;
-    z-index: 10;
-    pointer-events: none;
+  opacity: 1;
+  transition: opacity .6s;
 }
 
 /******************************************************************************
@@ -146,20 +136,6 @@ header h1 + .separator {
 
 .flex-grow {
   flex-grow: 1;
-}
-
-.gui-wrap {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-}
-
-.gui-wrap > .main {
-  pointer-events: all;
-  max-height: 100%;
-  overflow: auto;
 }
 
 .dg li.gui-stats:not(.folder) {
@@ -273,7 +249,7 @@ header h1 + .separator {
   display: flex;
   position: absolute;
   bottom: 0;
-  left: 20px;
+  right: 20px;
   height: 30px;
   box-shadow: 0px 0px 5px 0 rgba(0, 0, 0, 0.25);
   background: #FFF;
@@ -302,25 +278,94 @@ header h1 + .separator {
   text-align: center;
 }
 
+.logo {
+  position: absolute;
+  right:20px;
+  bottom:20px;
+  z-index:1;
+  width:6em;
+  opacity: 0.8;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+i {
+  background-size:1em 1em;
+}
+.logo-fill {
+  fill:#333a40;
+}
+
+.logo-stroke {
+  stroke:#333a40;
+}
+.gui-wrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  pointer-events: none;
+}
+
+.gui-wrap > .main {
+  pointer-events: all;
+}
+
+.dg li.gui-stats:not(.folder) {
+  height: auto;
+}
 /******************************************************************************
  * CSS Spinner
  *
- * http://tobiasahlin.com/spinkit/
  */
 
-.spinner {
-  width: 40px;
-  height: 40px;
+ .loading {
   position: absolute;
+  top: 0;
+  left: 0;
+  width: inherit;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.loading--inner {
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
   left: 50%;
   top: 50%;
-  margin: -20px;
+  margin: -30px;
+  border: solid 30px #667388;
+   border-bottom-color: #00A2FF;
+   border-right-color: #00A2FF;
+  animation: loading 0.8s ease-out 0s normal infinite forwards running;
+  border-radius: 50%;
+}
 
-  background-color: #333;
+@keyframes loading {
+  0% {
+    transform: rotate(0deg) scale(1);
+    border: solid 30px #667388;
+    border-bottom-color: #00A2FF;
+    border-right-color: #00A2FF;
+  }
 
-  border-radius: 100%;
-  -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
-  animation: sk-scaleout 1.0s infinite ease-in-out;
+  50% {
+    transform: rotate(180deg) scale(0.6);
+    border: solid 30px #F0F8FD;
+    border-bottom-color: #F0F8FD;
+    border-right-color: #F0F8FD;
+  }
+
+  100% {
+    transform: rotate(360deg) scale(1);
+    border: solid 30px #667388;
+    border-bottom-color: #00A2FF;
+    border-right-color: #00A2FF;
+  }
 }
 
 @-webkit-keyframes sk-scaleout {
