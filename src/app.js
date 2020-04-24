@@ -46,10 +46,10 @@ class App {
       const headerEl = document.querySelector('header');
       headerEl.style.display = 'none';
     }
-
-    if (options.model) {
-      this.view(options.model, '', new Map());
-    }
+    // govie addon
+    // if (options.model) {
+    //   this.view(options.model, '', new Map());
+    // }
   }
 
   /**
@@ -157,7 +157,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const app = new App(document.body, location);
   const goviefiedApp = makeGovieApp(app);
-    if (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+  // load model from url
+  // if (app.options.model) {
+  //   goviefiedApp.loadDefaultModel(app.options.model);
+  // }
+  if (location.hostname === "localhost" || location.hostname === "127.0.0.1")
         goviefiedApp.loadDefaultModel('assets/test_asset.glb');
     setTimeout(goviefiedApp.notifyLoaded, 500);
 });
