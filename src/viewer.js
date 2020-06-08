@@ -33,6 +33,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+
 // import { RoughnessMipmapper } from 'three/examples/jsm/utils/RoughnessMipmapper.js';
 
 import { GUI } from 'dat.gui';
@@ -82,10 +83,10 @@ export class Viewer {
         this.clips = [];
         this.gui = null;
         this.customProps = [];
-
+        window.Viewer = this;
         this.state = {
             environment: options.preset === Preset.ASSET_GENERATOR ?
-                environments.find((e) => e.id === 'footprint-court').name : environments[1].name,
+                environments.find((e) => e.id === 'forest').name : environments[1].name,
             background: false,
             playbackSpeed: 1.0,
             actionStates: {},
@@ -102,7 +103,7 @@ export class Viewer {
             textureEncoding: 'sRGB',
             ambientIntensity: 2,
             ambientColor: 0x000000,
-            directIntensity: 2, //0.8 * Math.PI, // TODO(#116)
+            directIntensity: 1, //0.8 * Math.PI, // TODO(#116)
             directColor: 0xFFF5D9,
             bgColor1: '#F1F1F1',
             bgColor2: '#353535',
@@ -138,6 +139,7 @@ export class Viewer {
 
         this.pmremGenerator = new PMREMGenerator(this.renderer);
         this.pmremGenerator.compileEquirectangularShader();
+
 
         this.controls = new OrbitControls(this.defaultCamera, this.renderer.domElement);
         this.controls.autoRotate = false;
@@ -253,9 +255,22 @@ export class Viewer {
                 const blobURLs = [];
 
                 loader.load(url, (gltf) => {
+                    gltf.scene.traverse(function(node) {
+                        // GOVIE ADDON
+                        if (node.isMesh) {
+                            if (node.userData.has_lightmap) {
+                                node.material.lightMap = node.material.emissiveMap
+                                node.material.emissiveMap = null
+                                node.material.lightMapIntensity = 5
+                                node.material.emissiveIntensity = 0
+                                    // node.material.envMapIntensity = 0
+                            }
+                        }
+                    });
 
                     const scene = gltf.scene || gltf.scenes[0];
                     const clips = gltf.animations || [];
+
 
                     if (!scene) {
                         // Valid, but not supported by this viewer.
@@ -514,34 +529,17 @@ export class Viewer {
                 this.scene.remove(this.vignette);
             }
 
-
+            this.scene.environment = envMap;
+            this.scene.background = this.state.background ? envMap : null;
             /* govie addon: remember loaded environments */
             environment.isLoaded = true;
             environment.envMap = envMap;
-            // environment.cubeMap = cubeMap;
-
-            traverseMaterials(this.content, (material) => {
-                if (material.isMeshStandardMaterial || material.isGLTFSpecularGlossinessMaterial) {
-                    material.envMap = envMap;
-                    material.needsUpdate = true;
-                }
-            });
-
-            this.scene.environment = envMap;
-            this.scene.background = this.state.background ? envMap : null;
-
         });
 
     }
 
     getCubeMapTexture(environment) {
-        const {
-            path,
-            format,
-            isLoaded,
-            envMap,
-        } = environment;
-
+        const { path, envMap, isLoaded } = environment;
         /* govie addon: remember loaded environments */
         if (isLoaded) {
             return Promise.resolve({ envMap });

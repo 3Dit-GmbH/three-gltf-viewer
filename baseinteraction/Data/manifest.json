@@ -1,0 +1,190 @@
+{
+   "id": "com.3Dit.BaseInteraction.ThreeJS_v1",
+   "projectId": "com.3Dit.BaseInteraction.ThreeJS",
+   "title": "interaction.modelImporter.title",
+   "descrition": "interaction.modelImporter.description",
+   "api": 1,
+   "version-manifest": 1.1,
+   "version-govie": 1.1,
+   "version-interaction": 1,
+   "author": "3D Interaction Technologies GmbH",
+   "createdAt": 0,
+   "updatedAt": 0,
+   "sets": [
+      {
+         "id": "set.sceneAndCamera.id",
+         "title": "set.sceneAndCamera.title",
+         "description": "set.sceneAndCamera.description",
+         "attributes": [
+            {
+               "id": 1000,
+               "title": "attribute.camera.title",
+               "type": "action",
+               "text": "attribute.camera.text"
+            },
+            {
+               "id": 0,
+               "title": "hidden.camera",
+               "type": "string",
+               "custom": true,
+               "defaultValue": "{\"position\":{\"x\":2,\"y\":5,\"z\":14},\"target\":{\"x\":0,\"y\":0,\"z\":0}}",
+               "hidden": true
+            },
+            {
+               "id": 1,
+               "title": "attribute.autoRotate.title",
+               "text": "attribute.autoRotate.text",
+               "type": "boolean",
+               "defaultValue": false
+            }
+         ]
+      },
+      {
+         "id": "set.model.id",
+         "title": "set.model.title",
+         "description": "set.model.description",
+         "attributes":[
+            {
+               "id": 7,
+               "type": "asset",
+               "title": "attribute.modelAsset.title",
+               "text": "attribute.modelAsset.text",
+               "assetFormats": [
+                  "glb"
+               ],
+               "defaultValue": {
+                  "url": "",
+                  "format": "",
+                  "settings": ""
+               }
+            }
+         ]
+      },
+      {
+         "id": "set.environment.id",
+         "title": "set.environment.title",
+         "description": "set.environment.description",
+         "attributes": [
+            {
+               "id": 14,
+               "title": "attribute.grid.title",
+               "subTitle": "attribute.grid.subTitle",
+               "type": "boolean",
+               "defaultValue": false
+            },
+            {
+               "id": 18,
+               "title": "attribute.sky.title",
+               "type": "enum",
+               "data": {
+                  "0": "attribute.sky.data.studio",
+                  "1": "attribute.sky.data.cityNight",
+                  "2": "attribute.sky.data.cityDay",
+                  "3": "attribute.sky.data.nature",
+                  "4": "attribute.sky.data.neutral",
+                  "5": "attribute.sky.data.softbox"
+               },
+               "defaultValue": "3"
+            },
+            {
+               "id": 19,
+               "title": "attribute.brightness.title",
+               "type": "float",
+               "defaultValue": 1.0,
+               "step": 0.1,
+               "min": 0.0,
+               "max": 5.0
+            },
+            {
+               "id": 15,
+               "title": "attribute.background0.title",
+               "subTitle": "attribute.color.title",
+               "type": "color",
+               "data": [
+                  "(255, 255, 255, 255)",
+                  "(213, 137, 39, 255)",
+                  "(25, 142, 211, 255)",
+                  "(0, 65, 101, 255)",
+                  "(53, 53, 53, 255)",
+                  "(0, 0, 0, 255)"
+               ],
+               "defaultValue": "(225, 225, 225, 255)",
+               "custom": true
+            },
+            {
+               "id": 16,
+               "title": "attribute.background1.title",
+               "subTitle": "attribute.color.title",
+               "type": "color",
+               "data": [
+                  "(255, 255, 255, 255)",
+                  "(213, 137, 39, 255)",
+                  "(25, 142, 211, 255)",
+                  "(0, 65, 101, 255)",
+                  "(53, 53, 53, 255)",
+                  "(0, 0, 0, 255)"
+               ],
+               "defaultValue": "(53, 53, 53, 255)",
+               "custom": true
+            },
+            {
+               "id": 17,
+               "title": "attribute.ambient.title",
+               "subTitle": "attribute.color.title",
+               "type": "color",
+               "data": [
+                  "(255, 255, 255, 255)",
+                  "(213, 137, 39, 255)",
+                  "(25, 142, 211, 255)",
+                  "(0, 65, 101, 255)",
+                  "(53, 53, 53, 255)",
+                  "(0, 0, 0, 255)"
+               ],
+               "defaultValue": "(100, 100, 100, 255)",
+               "custom": true
+            }
+         ]
+      },
+      {
+         "id": "set.uiTemplate.id",
+         "title": "set.uiTemplate.title",
+         "description": "set.uiTemplate.description",
+         "attributes": [
+            {
+               "id": 100,
+               "title": "attribute.uiTemplate.title",
+               "text": "attribute.uiTemplate.text",
+               "type": "template",
+               "defaultValue": {
+                  "show": false,
+                  "rte-1": {},
+                  "rte-2": {},
+                  "rte-3": {},
+                  "rte-4": {},
+                  "rte-5": {},
+                  "templateId": "standard-1"
+               }
+            }
+         ]
+      },
+      {
+         "id": 5,
+         "title": "attribute.transition.text",
+         "type": "transition",
+         "attributes": [
+            {
+               "id": 2,
+               "title": "Transition",
+               "type": "enum",
+               "data": {
+                  "Slow": "attribute.transition.data.slow",
+                  "Normal": "attribute.transition.data.normal",
+                  "Fast": "attribute.transition.data.fast",
+                  "Instant": "attribute.transition.data.instant"
+               },
+               "defaultValue": "Normal"
+            }
+         ]
+      }
+   ]
+}
