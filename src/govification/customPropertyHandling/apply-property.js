@@ -12,8 +12,6 @@ const applyVisibility = (propertyValue, object) => {
     return true;
 };
 
-
-
 const applyUvAnimation = (propertyValue, object) => {
 
     const target = viewer.content.getObjectByName(propertyValue);
@@ -21,6 +19,29 @@ const applyUvAnimation = (propertyValue, object) => {
 
     target.materialMapOffset = target.material.map.offset
     sourceClip.tracks[0].name = target.name + ".materialMapOffset"
+};
+
+const applyLightmap = (propertyValue, object) => {
+    if (propertyValue === 1) {
+
+        if (object.type === "Mesh"){           
+            emissionToLightmap(object)
+        }
+        if (object.type === "Group"){
+            object.children.forEach(child => {
+                emissionToLightmap(child)
+            });
+            
+        }
+    }
+    return true;
+};
+
+const emissionToLightmap = (object) => {
+    object.material.lightMap = object.material.emissiveMap
+    object.material.envMapIntensity = 0
+    object.material.emissiveMap = null
+    object.material.emissiveIntensity = 0
 };
 
 export const applyProperty = ({
@@ -32,6 +53,8 @@ export const applyProperty = ({
             return applyVisibility(propertyValue, object);
         case CustomPropertyNames.uvAnim:
             return applyUvAnimation(propertyValue, object);
+        case CustomPropertyNames.hasLightmap:
+            return applyLightmap(propertyValue, object);
         default:
             return false;
     }

@@ -255,30 +255,18 @@ export class Viewer {
                 const blobURLs = [];
 
                 loader.load(url, (gltf) => {
-                    gltf.scene.traverse(function(node) {
-                        // GOVIE ADDON
-                        if (node.isMesh) {
-                            if (node.userData.has_lightmap) {
-                                node.material.lightMap = node.material.emissiveMap
-                                node.material.emissiveMap = null
-                                node.material.lightMapIntensity = 5
-                                node.material.emissiveIntensity = 0
-                                    // node.material.envMapIntensity = 0
-                            }
-                        }
-                    });
 
                     const scene = gltf.scene || gltf.scenes[0];
                     const clips = gltf.animations || [];
-
-
+            
                     if (!scene) {
-                        // Valid, but not supported by this viewer.
-                        throw new Error(
-                            'This model contains no scene, and cannot be viewed here. However,' +
-                            ' it may contain individual 3D resources.'
-                        );
+                      // Valid, but not supported by this viewer.
+                      throw new Error(
+                        'This model contains no scene, and cannot be viewed here. However,'
+                        + ' it may contain individual 3D resources.'
+                      );
                     }
+            
 
                     this.setContent(scene, clips);
                     // govie addon : handle and get custom props
@@ -657,6 +645,7 @@ export class Viewer {
         const tempViewer = this;
         this.visFolder = gui.addFolder('Visibility');
 
+
         this.customProps.forEach((prop) => {
             prop.checkbox = prop.propertyValue == 1
             this.visFolder.add(prop, "checkbox").onChange(() => {
@@ -664,7 +653,7 @@ export class Viewer {
                 tempViewer.applyCustomProperty(prop)
             }).name(prop.object.name)
         })
-
+        
         // Lighting controls.
         const lightFolder = gui.addFolder('Lighting');
         const envMapCtrl = lightFolder.add(this.state, 'environment', environments.map(env => env.name));

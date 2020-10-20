@@ -37,6 +37,7 @@
     "@tweenjs/tween.js": "^18.5.0",
     "dat.gui": "^0.7.7",
     "electron-serve": "^1.0.0",
+    "fs": "0.0.1-security",
     "glob-to-regexp": "^0.4.1",
     "glsl-blend-soft-light": "^1.0.5",
     "glsl-film-grain": "^1.0.4",
