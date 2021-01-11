@@ -43,10 +43,12 @@
     "glsl-film-grain": "^1.0.4",
     "gltf-validator": "^2.0.0-dev.3.2",
     "handlebars": "^4.7.6",
+    "jszip": "^3.5.0",
     "open": "7.0.3",
     "query-string": "^6.12.1",
+    "request-promise": "^4.2.6",
     "rgba-convert": "^0.3.0",
-    "simple-dropzone": "^0.7.0",
+    "simple-dropzone": "^0.8.0",
     "three": "^0.115.0",
     "underscore": "^1.10.2"
   },

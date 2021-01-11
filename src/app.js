@@ -1,6 +1,6 @@
 import { WEBGL } from 'three/examples/jsm/WebGL.js';
 import { Viewer } from './viewer.js';
-import { SimpleDropzone } from 'simple-dropzone';
+import { SimpleDropzone } from './simple-dropzone';
 import { ValidationController } from './validation-controller.js';
 import queryString from 'query-string'
 import { makeGovieApp } from './govification/make-govie-app';
@@ -57,6 +57,7 @@ class App {
      */
     createDropzone() {
         const dropCtrl = new SimpleDropzone(this.dropEl, this.inputEl);
+        // dropCtrl._onDrop()
         dropCtrl.on('drop', ({ files }) => this.load(files));
         dropCtrl.on('dropstart', () => this.showSpinner());
         dropCtrl.on('droperror', () => this.hideSpinner());
