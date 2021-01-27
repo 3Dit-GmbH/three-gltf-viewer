@@ -1,4 +1,5 @@
 import { CustomPropertyNames } from '../util/constants';
+import { LinearEncoding } from 'three';
 let viewer;
 
 
@@ -43,7 +44,7 @@ const emissionToLightmap = (object) => {
     }
     object.material.lightMap = object.material.emissiveMap;
     object.material.lightMap.encoding = LinearEncoding;
-    object.material.lightMapIntensity = 2;
+    object.material.lightMapIntensity = 4;
     object.material.envMapIntensity = 0.1;
     object.material.emissiveMap = null;
     object.material.emissiveIntensity = 0;
