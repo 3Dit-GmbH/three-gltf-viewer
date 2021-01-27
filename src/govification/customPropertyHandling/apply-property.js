@@ -38,10 +38,15 @@ const applyLightmap = (propertyValue, object) => {
 };
 
 const emissionToLightmap = (object) => {
-    object.material.lightMap = object.material.emissiveMap
-    object.material.envMapIntensity = 0
-    object.material.emissiveMap = null
-    object.material.emissiveIntensity = 0
+    if (object.material.emissiveMap === null) {
+        return;
+    }
+    object.material.lightMap = object.material.emissiveMap;
+    object.material.lightMap.encoding = LinearEncoding;
+    object.material.lightMapIntensity = 2;
+    object.material.envMapIntensity = 0.1;
+    object.material.emissiveMap = null;
+    object.material.emissiveIntensity = 0;
 };
 
 export const applyProperty = ({
