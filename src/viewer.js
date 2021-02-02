@@ -34,6 +34,8 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
+import { CustomPropertyNames } from './govification/util/constants';
+
 // import { RoughnessMipmapper } from 'three/examples/jsm/utils/RoughnessMipmapper.js';
 
 import { GUI } from 'dat.gui';
@@ -90,7 +92,7 @@ export class Viewer {
             background: false,
             playbackSpeed: 1.0,
             actionStates: {},
-            toneMapping: toneMappingOptions.Uncharted2,
+            toneMapping: toneMappingOptions.ACESFilmicToneMapping,
             actions: {},
             camera: DEFAULT_CAMERA,
             wireframe: false,
@@ -217,91 +219,91 @@ export class Viewer {
 
     load(url, rootPath, assetMap) {
 
-            const baseURL = LoaderUtils.extractUrlBase(url);
+        const baseURL = LoaderUtils.extractUrlBase(url);
 
-            // Load.
-            return new Promise((resolve, reject) => {
+        // Load.
+        return new Promise((resolve, reject) => {
 
-                const manager = new LoadingManager();
+            const manager = new LoadingManager();
 
-                // Intercept and override relative URLs.
-                manager.setURLModifier((url, path) => {
+            // Intercept and override relative URLs.
+            manager.setURLModifier((url, path) => {
 
-                    // URIs in a glTF file may be escaped, or not. Assume that assetMap is
-                    // from an un-escaped source, and decode all URIs before lookups.
-                    // See: https://github.com/donmccurdy/three-gltf-viewer/issues/146
-                    const normalizedURL = rootPath + decodeURI(url)
-                        .replace(baseURL, '')
-                        .replace(/^(\.?\/)/, '');
+                // URIs in a glTF file may be escaped, or not. Assume that assetMap is
+                // from an un-escaped source, and decode all URIs before lookups.
+                // See: https://github.com/donmccurdy/three-gltf-viewer/issues/146
+                const normalizedURL = rootPath + decodeURI(url)
+                    .replace(baseURL, '')
+                    .replace(/^(\.?\/)/, '');
 
-                    if (assetMap.has(normalizedURL)) {
-                        const blob = assetMap.get(normalizedURL);
-                        const blobURL = URL.createObjectURL(blob);
-                        blobURLs.push(blobURL);
-                        return blobURL;
-                    }
+                if (assetMap.has(normalizedURL)) {
+                    const blob = assetMap.get(normalizedURL);
+                    const blobURL = URL.createObjectURL(blob);
+                    blobURLs.push(blobURL);
+                    return blobURL;
+                }
 
-                    return (path || '') + url;
-
-                });
-
-                const loader = new GLTFLoader(manager);
-                loader.setCrossOrigin('anonymous');
-
-                const dracoLoader = new DRACOLoader();
-                dracoLoader.setDecoderPath('assets/draco/');
-                loader.setDRACOLoader(dracoLoader);
-
-                const blobURLs = [];
-
-                loader.load(url, (gltf) => {
-
-                    const scene = gltf.scene || gltf.scenes[0];
-                    const clips = gltf.animations || [];
-            
-                    if (!scene) {
-                      // Valid, but not supported by this viewer.
-                      throw new Error(
-                        'This model contains no scene, and cannot be viewed here. However,'
-                        + ' it may contain individual 3D resources.'
-                      );
-                    }
-            
-
-                    this.setContent(scene, clips);
-                    // govie addon : handle and get custom props
-                    const customProps = this.handleCustomProperty(scene);
-                    this.customProps = customProps;
-                    // this.playAllClips();
-                    // govie addon: add custom gui
-                    this.addCustomGUI();
-
-
-                    // govie addon: loading callback
-                    if (this.onLoaded && this.onLoaded.length) {
-                        this.onLoaded.forEach((cb) => {
-                            cb({
-                                loadedUrl: url,
-                                scene,
-                                clips,
-                                customProps,
-                            });
-                        });
-                    }
-
-                    blobURLs.forEach(URL.revokeObjectURL);
-
-                    // See: https://github.com/google/draco/issues/349
-                    // DRACOLoader.releaseDecoderModule();
-
-                    resolve(gltf);
-
-                }, undefined, reject);
+                return (path || '') + url;
 
             });
 
-        }
-        // govie addon: init camera
+            const loader = new GLTFLoader(manager);
+            loader.setCrossOrigin('anonymous');
+
+            const dracoLoader = new DRACOLoader();
+            dracoLoader.setDecoderPath('assets/draco/');
+            loader.setDRACOLoader(dracoLoader);
+
+            const blobURLs = [];
+
+            loader.load(url, (gltf) => {
+
+                const scene = gltf.scene || gltf.scenes[0];
+                const clips = gltf.animations || [];
+
+                if (!scene) {
+                    // Valid, but not supported by this viewer.
+                    throw new Error(
+                        'This model contains no scene, and cannot be viewed here. However,'
+                        + ' it may contain individual 3D resources.'
+                    );
+                }
+
+
+                this.setContent(scene, clips);
+                // govie addon : handle and get custom props
+                const customProps = this.handleCustomProperty(scene);
+                this.customProps = customProps;
+                // this.playAllClips();
+                // govie addon: add custom gui
+                this.addCustomGUI();
+
+
+                // govie addon: loading callback
+                if (this.onLoaded && this.onLoaded.length) {
+                    this.onLoaded.forEach((cb) => {
+                        cb({
+                            loadedUrl: url,
+                            scene,
+                            clips,
+                            customProps,
+                        });
+                    });
+                }
+
+                blobURLs.forEach(URL.revokeObjectURL);
+
+                // See: https://github.com/google/draco/issues/349
+                // DRACOLoader.releaseDecoderModule();
+
+                resolve(gltf);
+
+            }, undefined, reject);
+
+        });
+
+    }
+    // govie addon: init camera
     initCamera() {
         this.defaultCamera.near = 0.001;
         this.defaultCamera.far = 100;
@@ -630,13 +632,13 @@ export class Viewer {
                 clip.isPlaying = false;
 
                 const ctrl = this.animFolder.add(clip, "isPlaying").onChange(
-                        () => {
-                            if (clip.isPlaying) {
-                                this.mixer.clipAction(clip).play();
-                            } else {
-                                this.mixer.clipAction(clip).stop();
-                            }
-                        })
+                    () => {
+                        if (clip.isPlaying) {
+                            this.mixer.clipAction(clip).play();
+                        } else {
+                            this.mixer.clipAction(clip).stop();
+                        }
+                    })
                     .name(clip.name)
             });
         }
@@ -647,13 +649,15 @@ export class Viewer {
 
 
         this.customProps.forEach((prop) => {
-            prop.checkbox = prop.propertyValue == 1
-            this.visFolder.add(prop, "checkbox").onChange(() => {
-                prop.propertyValue = prop.checkbox ? 1 : 0;
-                tempViewer.applyCustomProperty(prop)
-            }).name(prop.object.name)
+            if (prop.propertyName == CustomPropertyNames.visibility) {
+                prop.checkbox = prop.propertyValue == 1
+                this.visFolder.add(prop, "checkbox").onChange(() => {
+                    prop.propertyValue = prop.checkbox ? 1 : 0;
+                    tempViewer.applyCustomProperty(prop)
+                }).name(prop.object.name)
+            }
         })
-        
+
         // Lighting controls.
         const lightFolder = gui.addFolder('Lighting');
         const envMapCtrl = lightFolder.add(this.state, 'environment', environments.map(env => env.name));
@@ -667,6 +671,14 @@ export class Viewer {
             // lightFolder.addColor(this.state, 'directColor'),
         ].forEach(ctrl => ctrl.onChange(() => this.updateLights()));
 
+
+        const perfFolder = gui.addFolder('Performance');
+        const perfLi = document.createElement('li');
+        this.stats.dom.style.position = 'static';
+        perfLi.appendChild(this.stats.dom);
+        perfLi.classList.add('gui-stats');
+        perfFolder.__ul.appendChild(perfLi);
+        
         const guiWrap = document.createElement('div');
         this.el.appendChild(guiWrap);
         guiWrap.classList.add('gui-wrap');
@@ -676,80 +688,80 @@ export class Viewer {
 
     addGUI() {
 
-            const gui = this.gui = new GUI({ autoPlace: false, width: 260, hideable: true });
+        const gui = this.gui = new GUI({ autoPlace: false, width: 260, hideable: true });
 
-            // Display controls.
-            const dispFolder = gui.addFolder('Display');
-            const envBackgroundCtrl = dispFolder.add(this.state, 'background');
-            envBackgroundCtrl.onChange(() => this.updateEnvironment());
-            const wireframeCtrl = dispFolder.add(this.state, 'wireframe');
-            wireframeCtrl.onChange(() => this.updateDisplay());
-            const skeletonCtrl = dispFolder.add(this.state, 'skeleton');
-            skeletonCtrl.onChange(() => this.updateDisplay());
-            const gridCtrl = dispFolder.add(this.state, 'grid');
-            gridCtrl.onChange(() => this.updateDisplay());
-            dispFolder.add(this.controls, 'autoRotate');
-            dispFolder.add(this.controls, 'screenSpacePanning');
-            const bgColor1Ctrl = dispFolder.addColor(this.state, 'bgColor1');
-            const bgColor2Ctrl = dispFolder.addColor(this.state, 'bgColor2');
-            bgColor1Ctrl.onChange(() => this.updateBackground());
-            bgColor2Ctrl.onChange(() => this.updateBackground());
+        // Display controls.
+        const dispFolder = gui.addFolder('Display');
+        const envBackgroundCtrl = dispFolder.add(this.state, 'background');
+        envBackgroundCtrl.onChange(() => this.updateEnvironment());
+        const wireframeCtrl = dispFolder.add(this.state, 'wireframe');
+        wireframeCtrl.onChange(() => this.updateDisplay());
+        const skeletonCtrl = dispFolder.add(this.state, 'skeleton');
+        skeletonCtrl.onChange(() => this.updateDisplay());
+        const gridCtrl = dispFolder.add(this.state, 'grid');
+        gridCtrl.onChange(() => this.updateDisplay());
+        dispFolder.add(this.controls, 'autoRotate');
+        dispFolder.add(this.controls, 'screenSpacePanning');
+        const bgColor1Ctrl = dispFolder.addColor(this.state, 'bgColor1');
+        const bgColor2Ctrl = dispFolder.addColor(this.state, 'bgColor2');
+        bgColor1Ctrl.onChange(() => this.updateBackground());
+        bgColor2Ctrl.onChange(() => this.updateBackground());
 
-            // Lighting controls.
-            const lightFolder = gui.addFolder('Lighting');
-            const encodingCtrl = lightFolder.add(this.state, 'textureEncoding', ['sRGB', 'Linear']);
-            encodingCtrl.onChange(() => this.updateTextureEncoding());
-            lightFolder.add(this.renderer, 'outputEncoding', { sRGB: sRGBEncoding, Linear: LinearEncoding })
-                .onChange(() => {
-                    this.renderer.outputEncoding = Number(this.renderer.outputEncoding);
-                    traverseMaterials(this.content, (material) => {
-                        material.needsUpdate = true;
-                    });
+        // Lighting controls.
+        const lightFolder = gui.addFolder('Lighting');
+        const encodingCtrl = lightFolder.add(this.state, 'textureEncoding', ['sRGB', 'Linear']);
+        encodingCtrl.onChange(() => this.updateTextureEncoding());
+        lightFolder.add(this.renderer, 'outputEncoding', { sRGB: sRGBEncoding, Linear: LinearEncoding })
+            .onChange(() => {
+                this.renderer.outputEncoding = Number(this.renderer.outputEncoding);
+                traverseMaterials(this.content, (material) => {
+                    material.needsUpdate = true;
                 });
-            const envMapCtrl = lightFolder.add(this.state, 'environment', environments.map((env) => env.name));
-            envMapCtrl.onChange(() => this.updateEnvironment());
-            [
-                lightFolder.add(this.state, 'exposure', 0, 2),
-                lightFolder.add(this.state, 'addLights').listen(),
-                lightFolder.add(this.state, 'ambientIntensity', 0, 2),
-                lightFolder.addColor(this.state, 'ambientColor'),
-                lightFolder.add(this.state, 'directIntensity', 0, 4), // TODO(#116)
-                lightFolder.addColor(this.state, 'directColor')
-            ].forEach((ctrl) => ctrl.onChange(() => this.updateLights()));
-
-            // Animation controls.
-            this.animFolder = gui.addFolder('Animation');
-            this.animFolder.domElement.style.display = 'none';
-            const playbackSpeedCtrl = this.animFolder.add(this.state, 'playbackSpeed', 0, 1);
-            playbackSpeedCtrl.onChange((speed) => {
-                if (this.mixer) this.mixer.timeScale = speed;
             });
-            this.animFolder.add({ playAll: () => this.playAllClips() }, 'playAll');
+        const envMapCtrl = lightFolder.add(this.state, 'environment', environments.map((env) => env.name));
+        envMapCtrl.onChange(() => this.updateEnvironment());
+        [
+            lightFolder.add(this.state, 'exposure', 0, 2),
+            lightFolder.add(this.state, 'addLights').listen(),
+            lightFolder.add(this.state, 'ambientIntensity', 0, 2),
+            lightFolder.addColor(this.state, 'ambientColor'),
+            lightFolder.add(this.state, 'directIntensity', 0, 4), // TODO(#116)
+            lightFolder.addColor(this.state, 'directColor')
+        ].forEach((ctrl) => ctrl.onChange(() => this.updateLights()));
 
-            // Morph target controls.
-            this.morphFolder = gui.addFolder('Morph Targets');
-            this.morphFolder.domElement.style.display = 'none';
+        // Animation controls.
+        this.animFolder = gui.addFolder('Animation');
+        this.animFolder.domElement.style.display = 'none';
+        const playbackSpeedCtrl = this.animFolder.add(this.state, 'playbackSpeed', 0, 1);
+        playbackSpeedCtrl.onChange((speed) => {
+            if (this.mixer) this.mixer.timeScale = speed;
+        });
+        this.animFolder.add({ playAll: () => this.playAllClips() }, 'playAll');
 
-            // Camera controls.
-            this.cameraFolder = gui.addFolder('Cameras');
-            this.cameraFolder.domElement.style.display = 'none';
+        // Morph target controls.
+        this.morphFolder = gui.addFolder('Morph Targets');
+        this.morphFolder.domElement.style.display = 'none';
 
-            // Stats.
-            const perfFolder = gui.addFolder('Performance');
-            const perfLi = document.createElement('li');
-            this.stats.dom.style.position = 'static';
-            perfLi.appendChild(this.stats.dom);
-            perfLi.classList.add('gui-stats');
-            perfFolder.__ul.appendChild(perfLi);
+        // Camera controls.
+        this.cameraFolder = gui.addFolder('Cameras');
+        this.cameraFolder.domElement.style.display = 'none';
 
-            const guiWrap = document.createElement('div');
-            this.el.appendChild(guiWrap);
-            guiWrap.classList.add('gui-wrap');
-            guiWrap.appendChild(gui.domElement);
-            gui.open();
+        // Stats.
+        const perfFolder = gui.addFolder('Performance');
+        const perfLi = document.createElement('li');
+        this.stats.dom.style.position = 'static';
+        perfLi.appendChild(this.stats.dom);
+        perfLi.classList.add('gui-stats');
+        perfFolder.__ul.appendChild(perfLi);
 
-        }
-        // Govie Addon
+        const guiWrap = document.createElement('div');
+        this.el.appendChild(guiWrap);
+        guiWrap.classList.add('gui-wrap');
+        guiWrap.appendChild(gui.domElement);
+        gui.open();
+
+    }
+    // Govie Addon
     updateToneMapping() {
         renderer.toneMapping = this.state.toneMapping;
         traverseMaterials(this.content, (material) => {
