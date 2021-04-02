@@ -35,6 +35,7 @@
   "license": "MIT",
   "dependencies": {
     "@tweenjs/tween.js": "^18.5.0",
+    "@xailabs/three-renderer-stats": "^1.0.4",
     "dat.gui": "^0.7.7",
     "electron-serve": "^1.0.0",
     "fs": "0.0.1-security",

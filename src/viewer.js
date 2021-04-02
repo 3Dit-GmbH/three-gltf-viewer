@@ -33,6 +33,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import RendererStats from '@xailabs/three-renderer-stats';
 
 import { CustomPropertyNames } from './govification/util/constants';
 
@@ -86,6 +87,7 @@ export class Viewer {
         this.gui = null;
         this.customProps = [];
         window.Viewer = this;
+        this.rendererStats = new RendererStats();
         this.state = {
             environment: options.preset === Preset.ASSET_GENERATOR ?
                 environments.find((e) => e.id === 'forest').name : environments[1].name,
@@ -194,7 +196,7 @@ export class Viewer {
     }
 
     render() {
-
+        this.rendererStats.update(this.renderer);
         this.renderer.render(this.scene, this.activeCamera);
         if (this.state.grid) {
             this.axesCamera.position.copy(this.defaultCamera.position)
@@ -621,6 +623,14 @@ export class Viewer {
         this.axesDiv.appendChild(this.axesRenderer.domElement);
     }
     addCustomGUI() {
+        // Render Stats
+       
+        this.rendererStats.domElement.style.position	= 'absolute'
+        this.rendererStats.domElement.style.left	= '0px'
+        this.rendererStats.domElement.style.bottom	= '0px'
+        document.body.appendChild( this.rendererStats.domElement )
+
+
         const gui = this.gui = new GUI({ autoPlace: false, width: 260, hideable: true });
 
         // Animation controls
